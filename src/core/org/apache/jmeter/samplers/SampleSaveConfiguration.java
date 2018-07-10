@@ -800,6 +800,11 @@ public class SampleSaveConfiguration implements Cloneable, Serializable {
     {
         return responseData;
     }
+    
+    public boolean saveResponseDataOnError()
+    {
+        return this.responseDataOnError;
+    }
 
     public void setResponseData(boolean responseData) {
         this.responseData = responseData;

@@ -163,9 +163,11 @@ public class ResultCollector extends AbstractListenerElement implements SampleLi
      * @param summer The {@link Summariser} to use
      */
     public ResultCollector(Summariser summer) {
-        setErrorLogging(false);
+        //setErrorLogging(false);
         setSuccessOnlyLogging(false);
-        setProperty(new ObjectProperty(SAVE_CONFIG, new SampleSaveConfiguration()));
+        SampleSaveConfiguration config = new SampleSaveConfiguration();
+        setProperty(new ObjectProperty(SAVE_CONFIG, config));
+        setErrorLogging(config.saveResponseDataOnError());
         summariser = summer;
     }
 
