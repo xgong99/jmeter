@@ -140,6 +140,7 @@ public class ResultCollector extends AbstractListenerElement implements SampleLi
 
     // Instance variables (guarded by volatile)
     private transient volatile PrintWriter out;
+    private transient volatile PrintWriter outJtl;
 
     /**
      * Is a test running ?
@@ -167,7 +168,7 @@ public class ResultCollector extends AbstractListenerElement implements SampleLi
         setSuccessOnlyLogging(false);
         SampleSaveConfiguration config = new SampleSaveConfiguration();
         setProperty(new ObjectProperty(SAVE_CONFIG, config));
-        setErrorLogging(config.saveResponseDataOnError());
+        setErrorLogging(config.saveErrorLogging());
         summariser = summer;
     }
 
@@ -327,6 +328,16 @@ public class ResultCollector extends AbstractListenerElement implements SampleLi
                     } catch (FileNotFoundException e) {
                         out = null;
                     }
+                    if (isErrorLogging()) {
+                    	try {
+                    	    String filename = getSaveConfig().saveErrorLogFile();
+                            outJtl = new PrintWriter(new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream(filename,
+                                true)), SaveService.getFileEncoding(StandardCharsets.UTF_8.name())), true);
+                    	} catch (Exception e) {
+                        	// do nothing
+                        }
+                    	
+                    } 
                 }
                 if (getVisualizer() != null) {
                     this.isStats = getVisualizer().isStats();
@@ -556,6 +567,19 @@ public class ResultCollector extends AbstractListenerElement implements SampleLi
                     } else { // !saveAsXml
                         CSVSaveService.saveSampleResult(event, out);
                     }
+                    if (isErrorLogging() && ! result.isSuccessful()) {
+                    	outJtl.println("-----------------------");
+                    	/*System.out.println(result.getResponseCode());
+                    	System.out.println(result.getUrlAsString());
+                    	System.out.println(result.getSamplerData());
+                    	System.out.println(result.getResponseDataAsString());*/
+                    	outJtl.println(result.getTimeStamp());
+                    	outJtl.println(result.getUrlAsString());
+                    	outJtl.println(result.getSamplerData());
+                    	outJtl.println(result.getRequestHeaders());
+                    	outJtl.println(result.getResponseCode()); 
+                    	outJtl.println(result.getResponseDataAsString());
+                    }
                 } catch (Exception err) {
                     log.error("Error trying to record a sample", err); // should throw exception back to caller
                 }
@@ -591,6 +615,9 @@ public class ResultCollector extends AbstractListenerElement implements SampleLi
             log.info("forced flush through ResultCollector#flushFile");
             out.flush();
         }
+        if (outJtl != null) {
+        	outJtl.flush();
+        }
     }
 
     /**
@@ -625,6 +652,7 @@ public class ResultCollector extends AbstractListenerElement implements SampleLi
         }
         files.clear();
         out = null;
+        outJtl = null;
     }
 
     /**
