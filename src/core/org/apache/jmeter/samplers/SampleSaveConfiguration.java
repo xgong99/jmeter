@@ -210,6 +210,8 @@ public class SampleSaveConfiguration implements Cloneable, Serializable {
     private static final String RESPONSEHEADERS_PROP = "jmeter.save.saveservice.responseHeaders"; // $NON_NLS-1$
     private static final String REQUESTHEADERS_PROP  = "jmeter.save.saveservice.requestHeaders"; // $NON_NLS-1$
     private static final String ENCODING_PROP        = "jmeter.save.saveservice.encoding"; // $NON_NLS-1$
+    private static final String ERROR_LOGGING        = "jmeter.save.saveservice.error";
+    private static final String ERROR_LOGGING_FILE   = "jmeter.save.saveservice.error.errolog";
 
 
     // optional processing instruction for line 2; e.g.
@@ -242,8 +244,10 @@ public class SampleSaveConfiguration implements Cloneable, Serializable {
     private static final boolean FIELD_NAMES;
     private static final boolean RESPONSE_HEADERS;
     private static final boolean REQUEST_HEADERS;
+    private static final boolean ERROR_LOG;
+    private static final String  ERROR_LOG_FILE;
 
-    private static final boolean RESPONSE_DATA_ON_ERROR;
+	private static final boolean RESPONSE_DATA_ON_ERROR;
 
     private static final boolean SAVE_ASSERTION_RESULTS_FAILURE_MESSAGE;
 
@@ -349,6 +353,12 @@ public class SampleSaveConfiguration implements Cloneable, Serializable {
         } else {
             DATE_FORMAT = null;
         }
+        
+        
+        ERROR_LOG = TRUE.equalsIgnoreCase(props.getProperty(ERROR_LOGGING, FALSE));
+        
+        ERROR_LOG_FILE = props.getProperty(ERROR_LOGGING_FILE, null);
+        
 
         TIMESTAMP = !NONE.equalsIgnoreCase(temporaryTimestampFormat);// reversed compare allows for null
 
@@ -451,6 +461,8 @@ public class SampleSaveConfiguration implements Cloneable, Serializable {
     private boolean responseHeaders = RESPONSE_HEADERS;
     private boolean requestHeaders = REQUEST_HEADERS;
     private boolean responseDataOnError = RESPONSE_DATA_ON_ERROR;
+    private boolean errorLogging = ERROR_LOG;
+    private String errorLogFile = ERROR_LOG_FILE;
 
     private boolean saveAssertionResultsFailureMessage = SAVE_ASSERTION_RESULTS_FAILURE_MESSAGE;
 
@@ -796,14 +808,13 @@ public class SampleSaveConfiguration implements Cloneable, Serializable {
         return responseData || TestPlan.getFunctionalMode() || (responseDataOnError && !res.isSuccessful());
     }
 
-    public boolean saveResponseData()
+    public boolean saveErrorLogging()
     {
-        return responseData;
+        return this.errorLogging;
     }
     
-    public boolean saveResponseDataOnError()
-    {
-        return this.responseDataOnError;
+    public String saveErrorLogFile() {
+    	return this.errorLogFile;
     }
 
     public void setResponseData(boolean responseData) {
